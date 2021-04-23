@@ -1,0 +1,36 @@
+pipeline {
+    agent none
+    stages {
+        stage('Checkout') {
+    		agent any
+    		steps {
+        		git branch: env.branch,
+                    credentialsId: 'github.com-ssh-key',
+                    url: env.repository
+    		}
+    	}
+        stage('Build') {
+            agent {
+                docker { image 'gradle:latest' }
+            }
+            steps {
+                echo 'Building Project'
+                sh 'gradle clean build'
+            }
+        }
+        stage('Docker image') {
+    	    agent any
+    	    steps {
+    	        script {
+    	            docker.build("hello-world:latest", "--build-arg JAR_FILE=build/libs/helloworld-0.0.1-SNAPSHOT.jar .")
+    	        }
+    	    }
+    	}
+        stage('Publish Unit Test Reports') {
+            agent any
+            steps {
+                junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+            }
+        }
+    }
+}

@@ -1,0 +1,23 @@
+@Library('jenkinsLib@master') _
+node () {
+    stage ('Checkout') {
+		git branch: env.branch,
+            credentialsId: 'github.com-ssh-key',
+            url: env.repository
+	}
+    stage ('Build') {
+        docker.withRegistry('https://index.docker.io/v1/') {
+            docker.image('gradle:latest').inside() {
+                log.info 'Building Project'
+        	    sh 'gradle clean build'
+            }
+    	}
+    }
+    stage ('Docker image') {
+	    echo 'Building Docker image'
+	    docker.build("hello-world:latest", "--build-arg JAR_FILE=build/libs/helloworld-0.0.1-SNAPSHOT.jar .")
+	}
+    stage ('Publish Unit Test Reports') {
+        junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+    }
+}
