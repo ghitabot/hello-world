@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.4.4'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
+	id "com.palantir.docker" version "0.34.0"
 }
 
 group = 'org.ghita'
@@ -19,4 +20,10 @@ dependencies {
 
 test {
 	useJUnitPlatform()
+}
+println jar.archivePath
+docker {
+	name "nexus.local.ghitabot.com/hello-world"
+	files bootJar.archivePath
+    buildArgs(['JAR_FILE': "${bootJar.archiveName}"])
 }
