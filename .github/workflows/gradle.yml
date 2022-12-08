@@ -19,7 +19,7 @@ permissions:
 jobs:
   build:
 
-    runs-on: test-laptop
+    runs-on: self-hosted
 
     steps:
     - uses: actions/checkout@v3
