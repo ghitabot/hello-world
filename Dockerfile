@@ -1,4 +1,4 @@
-FROM adoptopenjdk:8-jre-hotspot-focal
+FROM eclipse-temurin:17-jre
 
 RUN mkdir /opt/app
 ARG JAR_FILE

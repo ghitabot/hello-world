@@ -1,29 +1,55 @@
 plugins {
-	id 'org.springframework.boot' version '2.4.4'
-	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
-	id "com.palantir.docker" version "0.34.0"
+	id 'org.springframework.boot' version '3.4.4'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'com.google.cloud.tools.jib' version '3.4.5'
 }
 
 group = 'org.ghita'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '8'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
 
 repositories {
 	mavenCentral()
 }
 
 dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-test {
+tasks.named('test') {
 	useJUnitPlatform()
 }
-println jar.archivePath
-docker {
-	name "nexus.local.ghitabot.com/hello-world"
-	files bootJar.archivePath
-    buildArgs(['JAR_FILE': "${bootJar.archiveName}"])
+
+jib {
+	from {
+		image = 'eclipse-temurin:17-jre'
+		platforms {
+			platform {
+				os = 'linux'
+				architecture = 'amd64'
+			}
+			platform {
+				os = 'linux'
+				architecture = 'arm64'
+			}
+		}
+	}
+	to {
+		image = 'hello-world'
+		tags = ['latest']
+	}
+	container {
+		jvmFlags = ['-Dmy.property=example.value', '-Xms512m', '-Xdebug']
+		ports = ['8080']
+	}
 }
