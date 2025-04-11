@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-world
+  template:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+        - name: hello-world
+          image: "hello-world:latest"
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 384Mi
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: hello-world
+            - secretRef:
+                name: hello-world
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            timeoutSeconds: 15
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            timeoutSeconds: 15
+            successThreshold: 1
+            failureThreshold: 3
+            periodSeconds: 30
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            timeoutSeconds: 15
+            successThreshold: 1
+            failureThreshold: 30
+            periodSeconds: 15
